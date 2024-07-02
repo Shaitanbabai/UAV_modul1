@@ -13,13 +13,14 @@ class GPS:  # Класс для GPS
         self.longitude = longitude
         self.altitude = altitude
 
-    def update_location(self, new_latitude, new_longitude, new_altitude):  # Обновление данных о местоположении
+    def update_location(self, new_latitude, new_longitude, new_altitude):
         self.latitude = new_latitude
         self.longitude = new_longitude
         self.altitude = new_altitude
 
     def get_current_location(self):  # Получение текущего местоположения
         print(f"Текущее положение: Широта: {self.latitude}, Долгота: {self.longitude}, Высота: {self.altitude}")
+        return self.latitude, self.longitude, self.altitude
 
 
 class FlightController:  # Класс контроллера полета
@@ -30,8 +31,8 @@ class FlightController:  # Класс контроллера полета
 
     def take_off(self):  # Взлет
         if not self.is_flying:
-            print("Готовность на взлет!")
             self.is_flying = True
+            print("Готовность на взлет!")
         else:
             print("Дрон летит")
 
@@ -45,8 +46,9 @@ class FlightController:  # Класс контроллера полета
     def ascend(self, altitude_change):  # Подъем
         if self.is_flying:
             if self.current_altitude + altitude_change <= self.max_altitude:
-                self.current_altitude += altitude_change
-                print(f"Меняю высоту с {altitude_change} до {self.current_altitude} метров")
+                new_altitude = self.current_altitude + altitude_change
+                print(f"Меняю высоту с {self.current_altitude} до {new_altitude} метров")
+                self.current_altitude = new_altitude  # Обновление текущей высоты
             else:
                 print(f"Не могу подняться выше максимальной высоты {self.max_altitude} метров")
         else:
@@ -77,9 +79,9 @@ class FlightPlan:  # Класс для хранения и управления 
             "Мэрия Геленджика": (44.5691, 38.1044)
         }
 
-    def add_waypoint(self, name, waypoint):  # Добавление точки маршрута
+    def add_waypoints(self, name, waypoint):
         self.waypoints[name] = waypoint
-        print(f"Новая точка маршрута добавлена: {name} - {waypoint}")
+        print(f"Новая точка на маршруте добавлена: {name} - {waypoint}")
 
     def get_next_waypoint(self):  # Получение следующей точки маршрута
         if self.waypoints:
@@ -124,15 +126,17 @@ class Drone:  # Класс для управления дроном
             print("Маршрут не задан")
             return
         print(f"{self.drone_id} выдвинулся по маршруту")
-        for waypoint in self.flight_plan.waypoints:
-            self.move_to_coordinates(*waypoint)  # Распаковка координат
+        while self.flight_plan.waypoints:
+            waypoint = self.flight_plan.get_next_waypoint()
+            if waypoint:
+                self.move_to_coordinates(*waypoint)  # Распаковка координат
 
 
-flight_plan = FlightPlan()
-drone = Drone(Camera(1920, 30), GPS(50.1121, 8.6741, 100), FlightController(300), FlightPlan())
+drone_flight_plan = FlightPlan()
+drone = Drone("Вуглускр", Camera(1920, 30), GPS(50.1121, 8.6741, 0), FlightController(500), FlightPlan())
 
 drone.take_off()  # Взлет
-drone.ascend(50)  # Подъем на 50 метров
+drone.ascend(200)  # Подъем на 200 метров
 drone.follow_flight_path()  # Следование маршруту
 drone.descend(20)  # Спуск на 20 метров
 drone.land()  # Посадка
