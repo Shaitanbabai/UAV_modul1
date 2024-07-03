@@ -12,4 +12,15 @@ with open("bpla_storage_warehouse.csv", "r", encoding="utf-8") as file:
 for i in range(len(content)):
     content[i] = content[i].split(",")
 
-print(content)
+print(title)
+for i in content:
+    print(i)
+
+try:
+    for drone in content:
+        if not (drone[5] in ('исправно', 'неисправно')):
+            raise ValueError("Такого состояния не существует")
+except ValueError as e:
+    print("Проверь корректность записей в БД")
+
+print("Программа завершена корректно")
